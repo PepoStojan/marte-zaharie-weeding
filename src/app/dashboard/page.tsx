@@ -57,7 +57,7 @@ export default function DashboardPage() {
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-blue-700">Men's Side</div>
-              <div className="text-sm text-gray-400 mt-1">28 tables</div>
+              <div className="text-sm text-gray-400 mt-1">26 tables</div>
             </div>
           </button>
 

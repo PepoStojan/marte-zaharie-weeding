@@ -14,6 +14,8 @@ interface Props {
   accentClass: string
 }
 
+const ROWS = 6
+
 export default function SidePage({ sideType, title, emoji, accentClass }: Props) {
   const [tables, setTables] = useState<Table[]>([])
   const [mainTable, setMainTable] = useState<Table | null>(null)
@@ -56,66 +58,64 @@ export default function SidePage({ sideType, title, emoji, accentClass }: Props)
   const totalSeated = tables.reduce((sum, t) => sum + (guestsByTable[t.id]?.length ?? 0), 0)
   const mainGuests = mainTable ? (guestsByTable[mainTable.id] ?? []) : []
 
-  // 6 rows per column — fills top-to-bottom then next column
-  const ROWS = 6
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Nav */}
       <nav className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
         <button
           onClick={() => router.push('/dashboard')}
-          className="text-gray-500 hover:text-gray-800 text-lg leading-none px-1"
+          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 text-lg shrink-0"
         >
           ←
         </button>
-        <span className="text-xl">{emoji}</span>
-        <div className="flex-1">
-          <h1 className={`font-bold leading-none ${accentClass}`}>{title}</h1>
+        <span className="text-xl shrink-0">{emoji}</span>
+        <div className="flex-1 min-w-0">
+          <h1 className={`font-bold leading-none truncate ${accentClass}`}>{title}</h1>
           <p className="text-xs text-gray-400 mt-0.5">
-            {totalSeated} seated · {unseated.length} unseated · {tables.length} tables
+            {totalSeated} seated · {unseated.length} unseated
           </p>
         </div>
       </nav>
 
-      {/* Body */}
-      <main className="flex-1 flex gap-8 p-8 overflow-auto">
+      {/* Scrollable canvas */}
+      <main className="flex-1 overflow-auto p-4 md:p-8">
+        <div className="flex gap-4 md:gap-8 min-w-max">
 
-        {/* Main Table — always visible on the left */}
-        {mainTable && (
-          <div className="shrink-0 flex flex-col items-center gap-3">
-            <button
-              onClick={() => setActiveTable(mainTable)}
-              className="w-48 h-24 rounded-xl border-2 border-amber-400 bg-amber-50 hover:bg-amber-100 hover:shadow-md transition-all flex flex-col items-center justify-center gap-1"
-            >
-              <span className="text-xs font-semibold text-amber-600 tracking-widest uppercase">Main Table</span>
-              {mainGuests.length > 0 && (
-                <span className="text-xs text-amber-500">
-                  {mainGuests.length}/{mainTable.capacity_limit}
-                </span>
-              )}
-            </button>
+          {/* Main Table — left sidebar */}
+          {mainTable && (
+            <div className="shrink-0 flex flex-col justify-start pt-2">
+              <button
+                onClick={() => setActiveTable(mainTable)}
+                className="w-32 md:w-44 h-16 md:h-20 rounded-xl border-2 border-amber-400 bg-amber-50 hover:bg-amber-100 hover:shadow-md transition-all flex flex-col items-center justify-center gap-0.5"
+              >
+                <span className="text-[10px] md:text-xs font-semibold text-amber-600 tracking-widest uppercase">Main Table</span>
+                {mainGuests.length > 0 && (
+                  <span className="text-[10px] md:text-xs text-amber-500">
+                    {mainGuests.length}/{mainTable.capacity_limit}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Circle grid — column-flow */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateRows: `repeat(${ROWS}, auto)`,
+              gridAutoFlow: 'column',
+              gap: '1rem',
+            }}
+          >
+            {tables.map(table => (
+              <CircleTable
+                key={table.id}
+                table={table}
+                guests={guestsByTable[table.id] ?? []}
+                onClick={() => setActiveTable(table)}
+              />
+            ))}
           </div>
-        )}
-
-        {/* Circle grid — column-flow */}
-        <div
-          className="flex gap-5"
-          style={{
-            display: 'grid',
-            gridTemplateRows: `repeat(${ROWS}, auto)`,
-            gridAutoFlow: 'column',
-            gap: '1.25rem',
-          }}
-        >
-          {tables.map(table => (
-            <CircleTable
-              key={table.id}
-              table={table}
-              guests={guestsByTable[table.id] ?? []}
-              onClick={() => setActiveTable(table)}
-            />
-          ))}
         </div>
       </main>
 
