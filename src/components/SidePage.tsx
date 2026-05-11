@@ -13,12 +13,12 @@ interface Props {
   emoji: string
   accentClass: string
   mainOnRight?: boolean   // Men: true (table 1 near main), Women: false (default)
-  aisleAfterColumn?: number // insert a blank column gap after this column (1-indexed)
+  isolateFirstTable?: boolean // table 1 alone in col 1, aisle gap, then remaining tables
 }
 
 const ROWS = 5
 
-export default function SidePage({ sideType, title, emoji, accentClass, mainOnRight = false, aisleAfterColumn }: Props) {
+export default function SidePage({ sideType, title, emoji, accentClass, mainOnRight = false, isolateFirstTable = false }: Props) {
   const [tables, setTables] = useState<Table[]>([])
   const [mainTable, setMainTable] = useState<Table | null>(null)
   const [guests, setGuests] = useState<Guest[]>([])
@@ -116,23 +116,28 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
               direction: mainOnRight ? 'rtl' : 'ltr',
             }}
           >
-            {tables.flatMap((table, index) => {
-              const items = []
-              if (aisleAfterColumn && index === aisleAfterColumn * ROWS) {
-                for (let i = 0; i < ROWS; i++) {
-                  items.push(<div key={`aisle-${i}`} style={{ width: 140, height: 140 }} />)
-                }
-              }
-              items.push(
-                <CircleTable
-                  key={table.id}
-                  table={table}
-                  guests={guestsByTable[table.id] ?? []}
-                  onClick={() => setActiveTable(table)}
-                />
-              )
-              return items
-            })}
+            {isolateFirstTable && tables.length > 0 ? (() => {
+              const [first, ...rest] = tables
+              return [
+                // Table 1 alone at top of column 1
+                <CircleTable key={first.id} table={first} guests={guestsByTable[first.id] ?? []} onClick={() => setActiveTable(first)} />,
+                // Empty rows 2-5 of column 1
+                ...Array.from({ length: ROWS - 1 }, (_, i) => <div key={`col1-${i}`} style={{ width: 140, height: 140 }} />),
+                // Full blank aisle column
+                ...Array.from({ length: ROWS }, (_, i) => <div key={`aisle-${i}`} style={{ width: 140, height: 140 }} />),
+                // Remaining tables fill columns normally
+                ...rest.map(table => (
+                  <CircleTable key={table.id} table={table} guests={guestsByTable[table.id] ?? []} onClick={() => setActiveTable(table)} />
+                )),
+              ]
+            })() : tables.map(table => (
+              <CircleTable
+                key={table.id}
+                table={table}
+                guests={guestsByTable[table.id] ?? []}
+                onClick={() => setActiveTable(table)}
+              />
+            ))}
           </div>
 
           {/* Main table on RIGHT for Men */}
