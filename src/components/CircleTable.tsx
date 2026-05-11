@@ -6,6 +6,7 @@ interface Props {
   table: Table
   guests: Guest[]
   onClick: () => void
+  highlight?: boolean
 }
 
 function polarToXY(cx: number, cy: number, r: number, angle: number) {
@@ -15,7 +16,7 @@ function polarToXY(cx: number, cy: number, r: number, angle: number) {
   }
 }
 
-export default function CircleTable({ table, guests, onClick }: Props) {
+export default function CircleTable({ table, guests, onClick, highlight = false }: Props) {
   const size = 140
   const cx = size / 2
   const cy = size / 2
@@ -60,10 +61,12 @@ export default function CircleTable({ table, guests, onClick }: Props) {
     return { d, tp, textDeg, guest, firstName }
   })
 
+  const canAssign = highlight && !isFull
+
   return (
     <button
       onClick={onClick}
-      className="relative rounded-full hover:scale-105 active:scale-95 transition-transform hover:shadow-lg focus:outline-none"
+      className={`relative rounded-full hover:scale-105 active:scale-95 transition-transform hover:shadow-lg focus:outline-none ${canAssign ? 'animate-pulse ring-4 ring-rose-400 ring-offset-2' : ''}`}
       style={{ direction: 'ltr', width: size, height: size }}
     >
       <svg
