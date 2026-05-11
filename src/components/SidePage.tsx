@@ -163,13 +163,20 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
     <div className="shrink-0 flex flex-col justify-start pt-2">
       <button
         onClick={() => handleTableClick(mainTable)}
-        className="w-32 md:w-44 h-16 md:h-20 rounded-xl border-2 border-amber-400 bg-amber-50 hover:bg-amber-100 hover:shadow-md transition-all flex flex-col items-center justify-center gap-0.5"
+        className="w-32 md:w-44 rounded-xl border-2 border-amber-400 bg-amber-50 hover:bg-amber-100 hover:shadow-md transition-all flex flex-col items-center justify-start gap-1 px-2 py-2"
       >
         <span className="text-[10px] md:text-xs font-semibold text-amber-600 tracking-widest uppercase">Main Table</span>
+        <span className="text-[10px] md:text-xs text-amber-500">
+          {mainGuests.length}/{mainTable.capacity_limit}
+        </span>
         {mainGuests.length > 0 && (
-          <span className="text-[10px] md:text-xs text-amber-500">
-            {mainGuests.length}/{mainTable.capacity_limit}
-          </span>
+          <div className="w-full space-y-0.5 mt-0.5">
+            {mainGuests.map(g => (
+              <div key={g.id} className="text-[9px] md:text-[10px] text-amber-800 font-medium truncate text-center leading-tight">
+                {g.full_name}
+              </div>
+            ))}
+          </div>
         )}
       </button>
     </div>
