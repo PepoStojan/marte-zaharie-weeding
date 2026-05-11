@@ -7,12 +7,13 @@ import { createClient } from '@/lib/supabase/client'
 interface Props {
   guests: Guest[]
   tables: Table[]
+  dropdownTypes?: Array<'Women' | 'Men' | 'Main'>
   selectedGuest: Guest | null
   onSelectGuest: (guest: Guest | null) => void
   onRefresh: () => void
 }
 
-export default function GuestList({ guests, tables, selectedGuest, onSelectGuest, onRefresh }: Props) {
+export default function GuestList({ guests, tables, dropdownTypes, selectedGuest, onSelectGuest, onRefresh }: Props) {
   const [newName, setNewName] = useState('')
   const [newTableId, setNewTableId] = useState('')
   const [filter, setFilter] = useState<'all' | 'seated' | 'unseated'>('all')
@@ -82,12 +83,14 @@ export default function GuestList({ guests, tables, selectedGuest, onSelectGuest
     return `Table ${table.table_number === 0 ? '★' : table.table_number} · ${table.table_type}`
   }
 
-  // Sorted tables for the dropdown: Main first, then Women, then Men
-  const sortedTables = [...tables].sort((a, b) => {
-    const order = { Main: 0, Women: 1, Men: 2 }
-    if (a.table_type !== b.table_type) return order[a.table_type] - order[b.table_type]
-    return a.table_number - b.table_number
-  })
+  // Sorted tables for the dropdown: Main first, then Women, then Men — filtered by dropdownTypes if provided
+  const sortedTables = [...tables]
+    .filter(t => !dropdownTypes || dropdownTypes.includes(t.table_type))
+    .sort((a, b) => {
+      const order = { Main: 0, Women: 1, Men: 2 }
+      if (a.table_type !== b.table_type) return order[a.table_type] - order[b.table_type]
+      return a.table_number - b.table_number
+    })
 
   function GuestRow({ guest }: { guest: Guest }) {
     const table = guest.table_id ? tableById[guest.table_id] : null
@@ -217,8 +220,11 @@ export default function GuestList({ guests, tables, selectedGuest, onSelectGuest
         {/* Unseated */}
         {unseatedGuests.length > 0 && (
           <div>
-            <div className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1 sticky top-0 bg-white py-0.5">
-              Unseated ({unseatedGuests.length})
+            <div className="sticky top-0 bg-white py-1 mb-1">
+              <span className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+                Unseated · {unseatedGuests.length}
+              </span>
             </div>
             {unseatedGuests.map(g => <GuestRow key={g.id} guest={g} />)}
           </div>
@@ -228,10 +234,18 @@ export default function GuestList({ guests, tables, selectedGuest, onSelectGuest
         {sortedTableIds.map(tableId => {
           const table = tableById[tableId]
           if (!table) return null
+          const pillColors = {
+            Women: 'bg-rose-100 text-rose-800 [&>span]:bg-rose-500',
+            Men:   'bg-blue-100 text-blue-800 [&>span]:bg-blue-500',
+            Main:  'bg-amber-100 text-amber-800 [&>span]:bg-amber-500',
+          }[table.table_type]
           return (
             <div key={tableId}>
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sticky top-0 bg-white py-0.5">
-                {tableLabel(table)} ({byTable[tableId].length}/{table.capacity_limit})
+              <div className="sticky top-0 bg-white py-1 mb-1">
+                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${pillColors}`}>
+                  <span className="w-1.5 h-1.5 rounded-full inline-block" />
+                  Table {table.table_number === 0 ? '★' : table.table_number} · {table.table_type} · {byTable[tableId].length}/{table.capacity_limit}
+                </span>
               </div>
               {byTable[tableId].map(g => <GuestRow key={g.id} guest={g} />)}
             </div>

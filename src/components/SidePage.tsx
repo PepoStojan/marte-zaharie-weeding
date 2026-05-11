@@ -285,6 +285,7 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
             <GuestList
               guests={guests}
               tables={allTables}
+              dropdownTypes={sideType === 'Main' ? ['Main'] : [sideType, 'Main']}
               selectedGuest={selectedGuest}
               onSelectGuest={handleSelectGuest}
               onRefresh={fetchData}
