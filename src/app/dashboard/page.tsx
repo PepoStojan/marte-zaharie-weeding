@@ -32,22 +32,22 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col items-center justify-center gap-8 p-8">
         <h2 className="text-2xl font-bold text-gray-700">Choose a section</h2>
 
-        <div className="flex flex-col sm:flex-row gap-6 w-full max-w-2xl">
-          {/* Women's Side */}
+        <div className="flex flex-col sm:flex-row gap-6 w-full max-w-lg">
+          {/* Martuly's Side */}
           <button
             onClick={() => router.push('/dashboard/women')}
             className="flex-1 bg-white border-2 border-rose-200 hover:border-rose-400 hover:shadow-lg rounded-2xl p-10 flex flex-col items-center gap-4 transition-all group"
           >
             <div className="w-20 h-20 rounded-full bg-rose-100 overflow-hidden">
-              <img src="/martina.png" alt="Martina" className="w-full h-full object-cover object-top" />
+              <img src="/martina.png" alt="Martuly" className="w-full h-full object-cover object-top" />
             </div>
             <div className="text-center">
-              <div className="text-xl font-bold text-rose-700">Women's Side</div>
-              <div className="text-sm text-gray-400 mt-1">30 tables</div>
+              <div className="text-xl font-bold text-rose-700">Martuly Side</div>
+              <div className="text-sm text-gray-400 mt-1">29 tables</div>
             </div>
           </button>
 
-          {/* Men's Side */}
+          {/* Zaharie's Side */}
           <button
             onClick={() => router.push('/dashboard/men')}
             className="flex-1 bg-white border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg rounded-2xl p-10 flex flex-col items-center gap-4 transition-all group"
@@ -56,22 +56,8 @@ export default function DashboardPage() {
               <img src="/zaharie.png" alt="Zaharie" className="w-full h-full object-cover object-top" />
             </div>
             <div className="text-center">
-              <div className="text-xl font-bold text-blue-700">Men's Side</div>
+              <div className="text-xl font-bold text-blue-700">Zaharie Side</div>
               <div className="text-sm text-gray-400 mt-1">26 tables</div>
-            </div>
-          </button>
-
-          {/* Main Table */}
-          <button
-            onClick={() => router.push('/dashboard/main')}
-            className="flex-1 bg-white border-2 border-amber-200 hover:border-amber-400 hover:shadow-lg rounded-2xl p-10 flex flex-col items-center gap-4 transition-all group"
-          >
-            <div className="w-20 h-20 rounded-full bg-amber-100 group-hover:bg-amber-200 flex items-center justify-center text-4xl transition-colors">
-              ⭐
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-amber-700">Main Table</div>
-              <div className="text-sm text-gray-400 mt-1">1 table</div>
             </div>
           </button>
         </div>
