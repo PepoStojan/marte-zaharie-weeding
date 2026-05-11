@@ -228,15 +228,12 @@ export default function GuestList({ guests, tables, sideType, dropdownTypes, sel
       <div className="flex-1 overflow-y-auto space-y-2.5 pr-0.5">
 
         {unseatedGuests.length > 0 && (() => {
-          const idx = ++groupIndex
           const isCollapsed = collapsed.has('unseated')
           return (
-            <div className="rounded-xl border border-amber-100 overflow-hidden">
-              <button onClick={() => toggleCollapse('unseated')} className="w-full flex items-center gap-3 px-3 py-2.5 bg-amber-50 hover:bg-amber-100 transition-colors">
-                <span className="bg-amber-500 text-white text-xs font-bold w-7 h-7 rounded-lg flex items-center justify-center shrink-0">{String(idx).padStart(2, '0')}</span>
-                <span className="font-bold text-gray-900 text-sm">Unseated</span>
-                <span className="text-amber-600 text-sm font-medium">· {unseatedGuests.length}</span>
-                <svg className={`w-4 h-4 text-gray-400 ml-auto transition-transform ${isCollapsed ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            <div className="rounded-xl border border-gray-200 overflow-hidden">
+              <button onClick={() => toggleCollapse('unseated')} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span className="font-semibold text-gray-700 text-sm flex-1 text-left">Unseated · {unseatedGuests.length}</span>
+                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               </button>
               {!isCollapsed && unseatedGuests.map((g, i) => <GuestRow key={g.id} guest={g} index={i} />)}
             </div>
@@ -248,16 +245,16 @@ export default function GuestList({ guests, tables, sideType, dropdownTypes, sel
           if (!table) return null
           const tableGuests = byTable[tableId]
           const isCollapsed = collapsed.has(tableId)
-          const idx = ++groupIndex
+          const borderColor = { Women: 'border-rose-300', Men: 'border-blue-300', Main: 'border-amber-300' }[table.table_type]
           return (
-            <div key={tableId} className={`rounded-xl border overflow-hidden ${typeGroupBg[table.table_type]}`}>
-              <button onClick={() => toggleCollapse(tableId)} className="w-full flex items-center gap-3 px-3 py-2.5 hover:brightness-95 transition-all">
-                <span className={`${typeNumBg[table.table_type]} text-white text-xs font-bold w-7 h-7 rounded-lg flex items-center justify-center shrink-0`}>{String(idx).padStart(2, '0')}</span>
-                <span className="font-bold text-gray-900 text-sm">Table {table.table_number === 0 ? '★' : table.table_number}</span>
-                <span className="text-gray-300">|</span>
-                <span className={`text-sm font-semibold ${typeColor[table.table_type]}`}>{table.table_type}</span>
-                <span className="text-gray-400 text-sm">· {tableGuests.length} / {table.capacity_limit}</span>
-                <svg className={`w-4 h-4 text-gray-400 ml-auto transition-transform ${isCollapsed ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            <div key={tableId} className={`rounded-xl border border-gray-200 overflow-hidden`}>
+              <button onClick={() => toggleCollapse(tableId)} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span className={`w-1 h-6 rounded-full shrink-0 ${borderColor?.replace('border-', 'bg-')}`} />
+                <span className="font-semibold text-gray-800 text-sm flex-1 text-left">
+                  Table {table.table_number === 0 ? '★' : table.table_number}
+                  <span className="text-gray-400 font-normal ml-2">{tableGuests.length} / {table.capacity_limit}</span>
+                </span>
+                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               </button>
               {!isCollapsed && tableGuests.map((g, i) => <GuestRow key={g.id} guest={g} index={i} />)}
             </div>
