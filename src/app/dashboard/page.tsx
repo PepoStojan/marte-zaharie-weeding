@@ -2,6 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Cinzel_Decorative } from 'next/font/google'
+
+const disneyFont = Cinzel_Decorative({ subsets: ['latin'], weight: '700' })
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -30,7 +33,7 @@ export default function DashboardPage() {
 
       {/* Side picker */}
       <div className="flex-1 flex flex-col items-center justify-center gap-8 p-8">
-        <h2 className="text-2xl font-bold text-gray-700">Choose a section</h2>
+        <h2 className={`${disneyFont.className} text-4xl sm:text-5xl text-gray-800 text-center leading-tight`}>Choose a Character</h2>
 
         <div className="flex flex-col sm:flex-row gap-5 w-full max-w-2xl px-2">
           {/* Martuly's Side */}
