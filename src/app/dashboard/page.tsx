@@ -18,7 +18,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-[100dvh] bg-rose-50 flex flex-col overflow-x-hidden">
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <nav className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
         <button onClick={() => router.push('/dashboard')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <span className="text-2xl">💍</span>
           <div className="text-left">
@@ -32,8 +32,8 @@ export default function DashboardPage() {
       </nav>
 
       {/* Side picker */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-8 p-8">
-        <h2 className={`${disneyFont.className} text-4xl sm:text-5xl text-gray-800 text-center leading-tight`}>Choose a Character</h2>
+      <div className="flex-1 flex flex-col items-center justify-center gap-8 p-4 sm:p-8">
+        <h2 className={`${disneyFont.className} text-2xl sm:text-4xl md:text-5xl text-gray-800 text-center leading-tight px-2`}>Choose a Character</h2>
 
         <div className="flex flex-col sm:flex-row gap-5 w-full max-w-2xl px-2">
           {/* Martuly's Side */}
