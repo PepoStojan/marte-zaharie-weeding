@@ -226,8 +226,10 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
     </div>
   )
 
+  const pageBg = sideType === 'Women' ? 'bg-pink-50' : sideType === 'Men' ? 'bg-sky-50' : 'bg-gray-50'
+
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+    <div className={`h-screen ${pageBg} flex flex-col overflow-hidden`}>
       {/* Nav */}
       <nav className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 shrink-0 z-10">
         <button
