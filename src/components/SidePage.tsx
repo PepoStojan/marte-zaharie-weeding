@@ -305,12 +305,6 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
 
       </div>
 
-      {/* Total guests badge — fixed bottom right */}
-      <div className="fixed bottom-5 right-5 z-20 bg-gray-900 text-white rounded-2xl shadow-lg px-4 py-2.5 flex flex-col items-center pointer-events-none">
-        <span className="text-[10px] uppercase tracking-widest text-gray-400 leading-none mb-0.5">Total Guests</span>
-        <span className="text-2xl font-black leading-none">{guests.length}</span>
-      </div>
-
       {/* Modal */}
       {activeTable && (
         <TableModal
