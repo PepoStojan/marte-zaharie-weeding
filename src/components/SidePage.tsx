@@ -89,6 +89,76 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
     if (guest && !guest.table_id) setMobileTab('tables')
   }
 
+  const typeColors = {
+    Women: { border: 'border-rose-200', bg: 'bg-rose-50', bar: 'bg-rose-400', num: 'text-rose-700' },
+    Men:   { border: 'border-blue-200',  bg: 'bg-blue-50',  bar: 'bg-blue-400',  num: 'text-blue-700'  },
+    Main:  { border: 'border-amber-300', bg: 'bg-amber-50', bar: 'bg-amber-400', num: 'text-amber-700' },
+  }
+
+  function MobileCard({ table }: { table: Table }) {
+    const tableGuests = guestsByTable[table.id] ?? []
+    const seated = tableGuests.length
+    const isFull = seated >= table.capacity_limit
+    const canAssign = !!selectedGuest && !selectedGuest.table_id && !isFull
+    const colors = typeColors[table.table_type]
+
+    return (
+      <button
+        onClick={() => handleTableClick(table)}
+        className={`w-full text-left rounded-xl border-2 p-3 transition-all active:scale-95 ${colors.border} ${colors.bg} ${
+          canAssign ? 'ring-2 ring-rose-400 ring-offset-1 animate-pulse' : ''
+        } ${isFull ? 'opacity-70' : 'hover:shadow-md'}`}
+      >
+        <div className="flex items-start justify-between mb-2">
+          <span className={`text-2xl font-black ${colors.num}`}>
+            {table.table_number === 0 ? '★' : table.table_number}
+          </span>
+          <span className={`text-xs font-bold ${isFull ? 'text-red-600' : 'text-gray-500'}`}>
+            {seated}/{table.capacity_limit}
+            {isFull && <span className="ml-1 text-[10px] bg-red-100 text-red-600 px-1 py-0.5 rounded">FULL</span>}
+          </span>
+        </div>
+
+        {/* Occupancy bar */}
+        <div className="h-1 bg-white/70 rounded-full mb-2 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all ${isFull ? 'bg-red-400' : colors.bar}`}
+            style={{ width: `${(seated / table.capacity_limit) * 100}%` }}
+          />
+        </div>
+
+        {/* Guest names */}
+        <div className="space-y-0.5 min-h-[16px]">
+          {tableGuests.slice(0, 5).map(g => (
+            <div key={g.id} className="text-xs text-gray-700 truncate leading-tight">{g.full_name}</div>
+          ))}
+          {tableGuests.length > 5 && (
+            <div className="text-xs text-gray-400 italic">+{tableGuests.length - 5} more</div>
+          )}
+        </div>
+      </button>
+    )
+  }
+
+  const MobileTableGrid = (
+    <div className="w-full space-y-4">
+      {/* Main table card */}
+      {mainTable && (
+        <div>
+          <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Main Table</p>
+          <MobileCard table={mainTable} />
+        </div>
+      )}
+      {/* Side tables — 2 column grid */}
+      <div>
+        <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${accentClass}`}>{title}</p>
+        <div className="grid grid-cols-2 gap-3">
+          {tables.map(table => <MobileCard key={table.id} table={table} />)}
+        </div>
+      </div>
+    </div>
+  )
+
   const MainTableButton = mainTable ? (
     <div className="shrink-0 flex flex-col justify-start pt-2">
       <button
@@ -197,9 +267,16 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
       {/* Body — split panel */}
       <div className="flex-1 flex overflow-hidden">
 
-        {/* LEFT: table grid (hidden on mobile when guests tab active) */}
+        {/* LEFT: table area (hidden when guests tab active on mobile) */}
         <div className={`${mobileTab === 'guests' ? 'hidden' : 'flex'} md:flex flex-1 overflow-auto p-4 md:p-8`}>
-          {TableGrid}
+          {/* Mobile card grid */}
+          <div className="w-full md:hidden">
+            {MobileTableGrid}
+          </div>
+          {/* Desktop circle grid */}
+          <div className="hidden md:block">
+            {TableGrid}
+          </div>
         </div>
 
         {/* RIGHT: guest list panel */}
