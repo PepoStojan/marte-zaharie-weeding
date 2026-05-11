@@ -13,11 +13,12 @@ interface Props {
   emoji: string
   accentClass: string
   mainOnRight?: boolean   // Men: true (table 1 near main), Women: false (default)
+  aisleAfterColumn?: number // insert a blank column gap after this column (1-indexed)
 }
 
 const ROWS = 5
 
-export default function SidePage({ sideType, title, emoji, accentClass, mainOnRight = false }: Props) {
+export default function SidePage({ sideType, title, emoji, accentClass, mainOnRight = false, aisleAfterColumn }: Props) {
   const [tables, setTables] = useState<Table[]>([])
   const [mainTable, setMainTable] = useState<Table | null>(null)
   const [guests, setGuests] = useState<Guest[]>([])
@@ -115,14 +116,23 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
               direction: mainOnRight ? 'rtl' : 'ltr',
             }}
           >
-            {tables.map(table => (
-              <CircleTable
-                key={table.id}
-                table={table}
-                guests={guestsByTable[table.id] ?? []}
-                onClick={() => setActiveTable(table)}
-              />
-            ))}
+            {tables.flatMap((table, index) => {
+              const items = []
+              if (aisleAfterColumn && index === aisleAfterColumn * ROWS) {
+                for (let i = 0; i < ROWS; i++) {
+                  items.push(<div key={`aisle-${i}`} style={{ width: 140, height: 140 }} />)
+                }
+              }
+              items.push(
+                <CircleTable
+                  key={table.id}
+                  table={table}
+                  guests={guestsByTable[table.id] ?? []}
+                  onClick={() => setActiveTable(table)}
+                />
+              )
+              return items
+            })}
           </div>
 
           {/* Main table on RIGHT for Men */}
