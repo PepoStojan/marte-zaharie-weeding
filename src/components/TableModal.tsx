@@ -16,7 +16,6 @@ export default function TableModal({ table, guests, allUnseated, onClose, onRefr
   const [tab, setTab] = useState<'assign' | 'new'>('assign')
   const [selectedId, setSelectedId] = useState('')
   const [newName, setNewName] = useState('')
-  const [newCategory, setNewCategory] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
@@ -66,9 +65,9 @@ export default function TableModal({ table, guests, allUnseated, onClose, onRefr
     setError('')
     const { error: err } = await supabase
       .from('guests')
-      .insert({ full_name: newName.trim(), category: newCategory.trim(), table_id: table.id })
+      .insert({ full_name: newName.trim(), category: '', side: table.table_type, table_id: table.id })
     if (err) setError(err.message)
-    else { setNewName(''); setNewCategory(''); onRefresh() }
+    else { setNewName(''); onRefresh() }
     setLoading(false)
   }
 
@@ -221,13 +220,9 @@ export default function TableModal({ table, guests, allUnseated, onClose, onRefr
                   <input
                     value={newName}
                     onChange={e => setNewName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addNew()}
                     placeholder="Full name *"
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
-                  />
-                  <input
-                    value={newCategory}
-                    onChange={e => setNewCategory(e.target.value)}
-                    placeholder="Category (e.g. Family Peposki)"
+                    autoFocus
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2"
                   />
                   <button
