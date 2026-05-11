@@ -14,34 +14,54 @@ interface Props {
 
 export default function GuestList({ guests, tables, selectedGuest, onSelectGuest, onRefresh }: Props) {
   const [newName, setNewName] = useState('')
-  const [newCategory, setNewCategory] = useState('')
+  const [newTableId, setNewTableId] = useState('')
   const [filter, setFilter] = useState<'all' | 'seated' | 'unseated'>('all')
   const [search, setSearch] = useState('')
   const [adding, setAdding] = useState(false)
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
+  const tableById = tables.reduce<Record<string, Table>>((acc, t) => {
+    acc[t.id] = t
+    return acc
+  }, {})
+
   const filtered = guests.filter(g => {
     if (filter === 'seated' && !g.table_id) return false
     if (filter === 'unseated' && g.table_id) return false
-    if (search && !g.full_name.toLowerCase().includes(search.toLowerCase()) &&
-        !g.category.toLowerCase().includes(search.toLowerCase())) return false
+    if (search && !g.full_name.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
 
-  const grouped = filtered.reduce<Record<string, Guest[]>>((acc, g) => {
-    const key = g.category || 'Uncategorized'
+  // Group by table: unseated first, then by table type + number
+  const unseatedGuests = filtered.filter(g => !g.table_id)
+  const seatedGuests = filtered.filter(g => g.table_id)
+
+  const byTable = seatedGuests.reduce<Record<string, Guest[]>>((acc, g) => {
+    const key = g.table_id!
     if (!acc[key]) acc[key] = []
     acc[key].push(g)
     return acc
   }, {})
 
+  const sortedTableIds = Object.keys(byTable).sort((a, b) => {
+    const ta = tableById[a]
+    const tb = tableById[b]
+    if (!ta || !tb) return 0
+    if (ta.table_type !== tb.table_type) return ta.table_type.localeCompare(tb.table_type)
+    return ta.table_number - tb.table_number
+  })
+
   async function addGuest() {
     if (!newName.trim()) return
     setLoading(true)
-    await supabase.from('guests').insert({ full_name: newName.trim(), category: newCategory.trim() })
+    await supabase.from('guests').insert({
+      full_name: newName.trim(),
+      category: '',
+      ...(newTableId ? { table_id: newTableId } : {}),
+    })
     setNewName('')
-    setNewCategory('')
+    setNewTableId('')
     setAdding(false)
     setLoading(false)
     onRefresh()
@@ -58,10 +78,55 @@ export default function GuestList({ guests, tables, selectedGuest, onSelectGuest
     onRefresh()
   }
 
-  const tableById = tables.reduce<Record<string, Table>>((acc, t) => {
-    acc[t.id] = t
-    return acc
-  }, {})
+  function tableLabel(table: Table) {
+    return `Table ${table.table_number === 0 ? '★' : table.table_number} · ${table.table_type}`
+  }
+
+  // Sorted tables for the dropdown: Main first, then Women, then Men
+  const sortedTables = [...tables].sort((a, b) => {
+    const order = { Main: 0, Women: 1, Men: 2 }
+    if (a.table_type !== b.table_type) return order[a.table_type] - order[b.table_type]
+    return a.table_number - b.table_number
+  })
+
+  function GuestRow({ guest }: { guest: Guest }) {
+    const table = guest.table_id ? tableById[guest.table_id] : null
+    const isSelected = selectedGuest?.id === guest.id
+    return (
+      <div
+        onClick={() => onSelectGuest(isSelected ? null : guest)}
+        className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer text-sm border transition-all ${
+          isSelected ? 'border-rose-400 bg-rose-50' : 'border-transparent hover:bg-gray-50'
+        }`}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-gray-800 truncate">{guest.full_name}</div>
+          {table && (
+            <div className="text-xs text-gray-400">{tableLabel(table)}</div>
+          )}
+        </div>
+        <div className="flex items-center gap-1 ml-2 shrink-0">
+          {guest.table_id ? (
+            <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Seated</span>
+          ) : (
+            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Open</span>
+          )}
+          {guest.table_id && (
+            <button
+              onClick={e => { e.stopPropagation(); unassignGuest(guest.id) }}
+              className="text-gray-400 hover:text-amber-600 text-xs px-1"
+              title="Unassign"
+            >↩</button>
+          )}
+          <button
+            onClick={e => { e.stopPropagation(); removeGuest(guest.id) }}
+            className="text-gray-400 hover:text-red-500 text-xs px-1"
+            title="Remove"
+          >✕</button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -84,25 +149,37 @@ export default function GuestList({ guests, tables, selectedGuest, onSelectGuest
           <input
             value={newName}
             onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && addGuest()}
             placeholder="Full name *"
             className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+            autoFocus
           />
-          <input
-            value={newCategory}
-            onChange={e => setNewCategory(e.target.value)}
-            placeholder="Category (e.g. Family Peposki)"
-            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
-          />
+          <select
+            value={newTableId}
+            onChange={e => setNewTableId(e.target.value)}
+            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 bg-white"
+          >
+            <option value="">No table (unseated)</option>
+            {sortedTables.map(t => {
+              const seated = guests.filter(g => g.table_id === t.id).length
+              const full = seated >= t.capacity_limit
+              return (
+                <option key={t.id} value={t.id} disabled={full}>
+                  {tableLabel(t)} — {seated}/{t.capacity_limit}{full ? ' FULL' : ''}
+                </option>
+              )
+            })}
+          </select>
           <div className="flex gap-2">
             <button
               onClick={addGuest}
               disabled={loading || !newName.trim()}
               className="flex-1 bg-rose-600 disabled:bg-rose-300 text-white text-xs py-1.5 rounded transition-colors"
             >
-              {loading ? 'Saving...' : 'Save'}
+              {loading ? 'Saving…' : 'Save'}
             </button>
             <button
-              onClick={() => setAdding(false)}
+              onClick={() => { setAdding(false); setNewName(''); setNewTableId('') }}
               className="flex-1 bg-gray-200 text-gray-700 text-xs py-1.5 rounded transition-colors"
             >
               Cancel
@@ -130,79 +207,52 @@ export default function GuestList({ guests, tables, selectedGuest, onSelectGuest
       <input
         value={search}
         onChange={e => setSearch(e.target.value)}
-        placeholder="Search guests..."
+        placeholder="Search guests…"
         className="border border-gray-300 rounded px-2 py-1.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-rose-400"
       />
 
-      {/* Guest list grouped by category */}
+      {/* Guest list grouped by table */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-        {Object.keys(grouped).sort().map(category => (
-          <div key={category}>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sticky top-0 bg-white py-0.5">
-              {category} ({grouped[category].length})
+
+        {/* Unseated */}
+        {unseatedGuests.length > 0 && (
+          <div>
+            <div className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-1 sticky top-0 bg-white py-0.5">
+              Unseated ({unseatedGuests.length})
             </div>
-            {grouped[category].map(guest => {
-              const table = guest.table_id ? tableById[guest.table_id] : null
-              const isSelected = selectedGuest?.id === guest.id
-              return (
-                <div
-                  key={guest.id}
-                  onClick={() => onSelectGuest(isSelected ? null : guest)}
-                  className={`flex items-center justify-between p-2 rounded-lg cursor-pointer text-sm border transition-all ${
-                    isSelected
-                      ? 'border-rose-400 bg-rose-50'
-                      : 'border-transparent hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="min-w-0">
-                    <div className="font-medium text-gray-800 truncate">{guest.full_name}</div>
-                    {table && (
-                      <div className="text-xs text-gray-500">
-                        Table {table.table_number} · {table.table_type}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 ml-2 shrink-0">
-                    {guest.table_id ? (
-                      <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Seated</span>
-                    ) : (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Open</span>
-                    )}
-                    {guest.table_id && (
-                      <button
-                        onClick={e => { e.stopPropagation(); unassignGuest(guest.id) }}
-                        className="text-gray-400 hover:text-amber-600 text-xs px-1"
-                        title="Unassign"
-                      >
-                        ↩
-                      </button>
-                    )}
-                    <button
-                      onClick={e => { e.stopPropagation(); removeGuest(guest.id) }}
-                      className="text-gray-400 hover:text-red-500 text-xs px-1"
-                      title="Remove"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
+            {unseatedGuests.map(g => <GuestRow key={g.id} guest={g} />)}
           </div>
-        ))}
-        {Object.keys(grouped).length === 0 && (
+        )}
+
+        {/* Seated, grouped by table */}
+        {sortedTableIds.map(tableId => {
+          const table = tableById[tableId]
+          if (!table) return null
+          return (
+            <div key={tableId}>
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 sticky top-0 bg-white py-0.5">
+                {tableLabel(table)} ({byTable[tableId].length}/{table.capacity_limit})
+              </div>
+              {byTable[tableId].map(g => <GuestRow key={g.id} guest={g} />)}
+            </div>
+          )
+        })}
+
+        {filtered.length === 0 && (
           <p className="text-gray-400 text-sm text-center py-8">No guests found</p>
         )}
       </div>
 
       {/* Selected guest indicator */}
       {selectedGuest && (
-        <div className="mt-3 p-2 bg-rose-100 border border-rose-300 rounded-lg text-sm">
-          <span className="font-medium text-rose-800">{selectedGuest.full_name}</span>
-          <span className="text-rose-600 ml-1">— click a table to assign</span>
+        <div className="mt-3 p-2 bg-rose-100 border border-rose-300 rounded-lg text-sm flex items-center justify-between">
+          <span>
+            <span className="font-medium text-rose-800">{selectedGuest.full_name}</span>
+            <span className="text-rose-600 ml-1">— click a table to assign</span>
+          </span>
+          <button onClick={() => onSelectGuest(null)} className="text-rose-400 hover:text-rose-600 ml-2">✕</button>
         </div>
       )}
     </div>
   )
 }
-
