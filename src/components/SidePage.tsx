@@ -12,11 +12,12 @@ interface Props {
   title: string
   emoji: string
   accentClass: string
+  mainOnRight?: boolean   // Men: true (table 1 near main), Women: false (default)
 }
 
-const ROWS = 6
+const ROWS = 5
 
-export default function SidePage({ sideType, title, emoji, accentClass }: Props) {
+export default function SidePage({ sideType, title, emoji, accentClass, mainOnRight = false }: Props) {
   const [tables, setTables] = useState<Table[]>([])
   const [mainTable, setMainTable] = useState<Table | null>(null)
   const [guests, setGuests] = useState<Guest[]>([])
@@ -26,14 +27,20 @@ export default function SidePage({ sideType, title, emoji, accentClass }: Props)
 
   const fetchData = useCallback(async () => {
     const [{ data: t }, { data: main }, { data: g }] = await Promise.all([
-      supabase.from('tables').select('*').eq('table_type', sideType).order('table_number'),
+      supabase
+        .from('tables')
+        .select('*')
+        .eq('table_type', sideType)
+        // Men: descending so highest numbers on left, table 1 nearest main table (right)
+        // Women: ascending so table 1 is on the left
+        .order('table_number', { ascending: !mainOnRight }),
       supabase.from('tables').select('*').eq('table_type', 'Main').single(),
       supabase.from('guests').select('*').order('full_name'),
     ])
     if (t) setTables(t)
     if (main) setMainTable(main)
     if (g) setGuests(g)
-  }, [supabase, sideType])
+  }, [supabase, sideType, mainOnRight])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -58,6 +65,22 @@ export default function SidePage({ sideType, title, emoji, accentClass }: Props)
   const totalSeated = tables.reduce((sum, t) => sum + (guestsByTable[t.id]?.length ?? 0), 0)
   const mainGuests = mainTable ? (guestsByTable[mainTable.id] ?? []) : []
 
+  const MainTableButton = mainTable ? (
+    <div className="shrink-0 flex flex-col justify-start pt-2">
+      <button
+        onClick={() => setActiveTable(mainTable)}
+        className="w-32 md:w-44 h-16 md:h-20 rounded-xl border-2 border-amber-400 bg-amber-50 hover:bg-amber-100 hover:shadow-md transition-all flex flex-col items-center justify-center gap-0.5"
+      >
+        <span className="text-[10px] md:text-xs font-semibold text-amber-600 tracking-widest uppercase">Main Table</span>
+        {mainGuests.length > 0 && (
+          <span className="text-[10px] md:text-xs text-amber-500">
+            {mainGuests.length}/{mainTable.capacity_limit}
+          </span>
+        )}
+      </button>
+    </div>
+  ) : null
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Nav */}
@@ -81,24 +104,10 @@ export default function SidePage({ sideType, title, emoji, accentClass }: Props)
       <main className="flex-1 overflow-auto p-4 md:p-8">
         <div className="flex gap-4 md:gap-8 min-w-max">
 
-          {/* Main Table — left sidebar */}
-          {mainTable && (
-            <div className="shrink-0 flex flex-col justify-start pt-2">
-              <button
-                onClick={() => setActiveTable(mainTable)}
-                className="w-32 md:w-44 h-16 md:h-20 rounded-xl border-2 border-amber-400 bg-amber-50 hover:bg-amber-100 hover:shadow-md transition-all flex flex-col items-center justify-center gap-0.5"
-              >
-                <span className="text-[10px] md:text-xs font-semibold text-amber-600 tracking-widest uppercase">Main Table</span>
-                {mainGuests.length > 0 && (
-                  <span className="text-[10px] md:text-xs text-amber-500">
-                    {mainGuests.length}/{mainTable.capacity_limit}
-                  </span>
-                )}
-              </button>
-            </div>
-          )}
+          {/* Main table on LEFT for Women */}
+          {!mainOnRight && MainTableButton}
 
-          {/* Circle grid — column-flow */}
+          {/* Circle grid */}
           <div
             style={{
               display: 'grid',
@@ -116,6 +125,9 @@ export default function SidePage({ sideType, title, emoji, accentClass }: Props)
               />
             ))}
           </div>
+
+          {/* Main table on RIGHT for Men */}
+          {mainOnRight && MainTableButton}
         </div>
       </main>
 
