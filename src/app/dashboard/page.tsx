@@ -38,8 +38,8 @@ export default function DashboardPage() {
             onClick={() => router.push('/dashboard/women')}
             className="flex-1 bg-white border-2 border-rose-200 hover:border-rose-400 hover:shadow-lg rounded-2xl p-10 flex flex-col items-center gap-4 transition-all group"
           >
-            <div className="w-20 h-20 rounded-full bg-rose-100 group-hover:bg-rose-200 flex items-center justify-center text-4xl transition-colors">
-              👰
+            <div className="w-20 h-20 rounded-full bg-rose-100 overflow-hidden">
+              <img src="/martina.png" alt="Martina" className="w-full h-full object-cover object-top" />
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-rose-700">Women's Side</div>
@@ -52,8 +52,8 @@ export default function DashboardPage() {
             onClick={() => router.push('/dashboard/men')}
             className="flex-1 bg-white border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg rounded-2xl p-10 flex flex-col items-center gap-4 transition-all group"
           >
-            <div className="w-20 h-20 rounded-full bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center text-4xl transition-colors">
-              🤵
+            <div className="w-20 h-20 rounded-full bg-blue-100 overflow-hidden">
+              <img src="/zaharie.png" alt="Zaharie" className="w-full h-full object-cover object-top" />
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-blue-700">Men's Side</div>
