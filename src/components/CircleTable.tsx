@@ -64,7 +64,7 @@ export default function CircleTable({ table, guests, onClick }: Props) {
     <button
       onClick={onClick}
       className="relative rounded-full hover:scale-105 active:scale-95 transition-transform hover:shadow-lg focus:outline-none"
-      style={{ width: size, height: size }}
+      style={{ direction: 'ltr', width: size, height: size }}
     >
       <svg
         width={size}

@@ -31,9 +31,7 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
         .from('tables')
         .select('*')
         .eq('table_type', sideType)
-        // Men: descending so highest numbers on left, table 1 nearest main table (right)
-        // Women: ascending so table 1 is on the left
-        .order('table_number', { ascending: !mainOnRight }),
+        .order('table_number', { ascending: true }),
       supabase.from('tables').select('*').eq('table_type', 'Main').single(),
       supabase.from('guests').select('*').order('full_name'),
     ])
@@ -107,13 +105,14 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
           {/* Main table on LEFT for Women */}
           {!mainOnRight && MainTableButton}
 
-          {/* Circle grid */}
+          {/* Circle grid — rtl on Men so table 1 lands top-right near main table */}
           <div
             style={{
               display: 'grid',
               gridTemplateRows: `repeat(${ROWS}, auto)`,
               gridAutoFlow: 'column',
               gap: '1rem',
+              direction: mainOnRight ? 'rtl' : 'ltr',
             }}
           >
             {tables.map(table => (
