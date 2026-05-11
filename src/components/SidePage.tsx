@@ -151,7 +151,7 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
       {/* Side tables — 2 column grid */}
       <div>
         <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${accentClass}`}>{title}</p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {tables.map(table => <MobileCard key={table.id} table={table} />)}
         </div>
       </div>
@@ -274,18 +274,18 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
 
         {/* LEFT: table area */}
         <div className={`${mobileTab === 'guests' ? 'hidden' : 'flex'} md:flex flex-col flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-8`}>
-          {/* Mobile card grid */}
-          <div className="w-full md:hidden">
+          {/* Card grid — phone + iPad (< 1024px) */}
+          <div className="w-full lg:hidden">
             {MobileTableGrid}
           </div>
-          {/* Desktop circle grid */}
-          <div className="hidden md:block overflow-x-auto">
+          {/* Circle grid — desktop only (>= 1024px) */}
+          <div className="hidden lg:block overflow-x-auto">
             {TableGrid}
           </div>
         </div>
 
         {/* RIGHT: guest list panel */}
-        <div className={`${mobileTab === 'tables' ? 'hidden' : 'flex'} md:flex flex-col w-full md:w-80 md:border-l md:border-gray-200 bg-white shrink-0 min-h-0`}>
+        <div className={`${mobileTab === 'tables' ? 'hidden' : 'flex'} md:flex flex-col w-full md:w-72 lg:w-80 md:border-l md:border-gray-200 bg-white shrink-0 min-h-0`}>
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-4">
             <GuestList
               guests={guests}
