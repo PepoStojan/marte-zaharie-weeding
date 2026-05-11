@@ -56,9 +56,12 @@ export default function CircleTable({ table, guests, onClick, highlight = false 
     const textR = (outerR + innerR) / 2
     const tp = polarToXY(cx, cy, textR, midAngle)
     const textDeg = (midAngle * 180) / Math.PI + 90
-    const firstName = guest ? guest.full_name.split(' ')[0].slice(0, 8) : ''
+    const nameParts = guest ? guest.full_name.trim().split(/\s+/) : []
+    const line1 = nameParts[0] ?? ''
+    const line2 = nameParts.slice(1).join(' ')
+    const hasTwo = line2.length > 0
 
-    return { d, tp, textDeg, guest, firstName }
+    return { d, tp, textDeg, guest, line1, line2, hasTwo }
   })
 
   const canAssign = highlight && !isFull
@@ -76,7 +79,7 @@ export default function CircleTable({ table, guests, onClick, highlight = false 
         className="rounded-full"
       >
         {/* Slices */}
-        {slices.map(({ d, tp, textDeg, guest, firstName }, i) => (
+        {slices.map(({ d, tp, textDeg, guest, line1, line2, hasTwo }, i) => (
           <g key={i}>
             <path
               d={d}
@@ -86,16 +89,14 @@ export default function CircleTable({ table, guests, onClick, highlight = false 
             />
             {guest && (
               <text
-                x={tp.x}
-                y={tp.y}
                 textAnchor="middle"
-                dominantBaseline="middle"
                 transform={`rotate(${textDeg}, ${tp.x}, ${tp.y})`}
-                fontSize={cap <= 8 ? '9' : '7.5'}
+                fontSize={cap <= 8 ? '8.5' : '6.5'}
                 fontWeight="600"
                 fill={typeColors.text}
               >
-                {firstName}
+                <tspan x={tp.x} y={tp.y} dy={hasTwo ? '-4' : '0'}>{line1}</tspan>
+                {hasTwo && <tspan x={tp.x} dy="8">{line2}</tspan>}
               </text>
             )}
           </g>
