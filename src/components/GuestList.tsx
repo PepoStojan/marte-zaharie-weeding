@@ -76,15 +76,20 @@ export default function GuestList({ guests, tables, sideType, dropdownTypes, sel
 
   const tableById = tables.reduce<Record<string, Table>>((acc, t) => { acc[t.id] = t; return acc }, {})
 
+  const validTableIds = new Set(
+    tables.filter(t => !dropdownTypes || dropdownTypes.includes(t.table_type)).map(t => t.id)
+  )
+
   const filtered = guests.filter(g => {
-    if (filter === 'seated' && !g.table_id) return false
-    if (filter === 'unseated' && g.table_id) return false
+    const isSeated = !!g.table_id && validTableIds.has(g.table_id)
+    if (filter === 'seated' && !isSeated) return false
+    if (filter === 'unseated' && isSeated) return false
     if (search && !g.full_name.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
 
-  const unseatedGuests = filtered.filter(g => !g.table_id)
-  const seatedGuests = filtered.filter(g => g.table_id)
+  const unseatedGuests = filtered.filter(g => !g.table_id || !validTableIds.has(g.table_id))
+  const seatedGuests = filtered.filter(g => g.table_id && validTableIds.has(g.table_id))
 
   const byTable = seatedGuests.reduce<Record<string, Guest[]>>((acc, g) => {
     const key = g.table_id!
