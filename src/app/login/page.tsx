@@ -29,7 +29,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-rose-50 flex items-center justify-center p-4">
+    <div className="min-h-[100dvh] bg-rose-50 flex items-center justify-center p-4 overflow-x-hidden">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">💍</div>
