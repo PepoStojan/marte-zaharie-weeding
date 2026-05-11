@@ -245,11 +245,11 @@ export default function GuestList({ guests, tables, sideType, dropdownTypes, sel
           if (!table) return null
           const tableGuests = byTable[tableId]
           const isCollapsed = collapsed.has(tableId)
-          const borderColor = { Women: 'border-rose-300', Men: 'border-blue-300', Main: 'border-amber-300' }[table.table_type]
+          const stripColor = { Women: 'bg-rose-300', Men: 'bg-blue-300', Main: 'bg-amber-300' }[table.table_type] ?? 'bg-gray-300'
           return (
             <div key={tableId} className={`rounded-xl border border-gray-200 overflow-hidden`}>
               <button onClick={() => toggleCollapse(tableId)} className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors">
-                <span className={`w-1 h-6 rounded-full shrink-0 ${borderColor?.replace('border-', 'bg-')}`} />
+                <span className={`w-1 h-6 rounded-full shrink-0 ${stripColor}`} />
                 <span className="font-semibold text-gray-800 text-sm flex-1 text-left">
                   Table {table.table_number === 0 ? '★' : table.table_number}
                   <span className="text-gray-400 font-normal ml-2">{tableGuests.length} / {table.capacity_limit}</span>
