@@ -107,36 +107,43 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
           {!mainOnRight && MainTableButton}
 
           {/* Circle grid — rtl on Men so table 1 lands top-right near main table */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateRows: `repeat(${ROWS}, auto)`,
-              gridAutoFlow: 'column',
-              gap: '1rem',
-              direction: mainOnRight ? 'rtl' : 'ltr',
-            }}
-          >
-            {isolateFirstTable && tables.length > 0 ? (() => {
-              const [first, ...rest] = tables
-              return [
-                // Table 1 alone at top of column 1
-                <CircleTable key={first.id} table={first} guests={guestsByTable[first.id] ?? []} onClick={() => setActiveTable(first)} />,
-                // Empty rows 2-5 of column 1
-                ...Array.from({ length: ROWS - 1 }, (_, i) => <div key={`col1-${i}`} style={{ width: 140, height: 140 }} />),
-                // Remaining tables fill columns normally
-                ...rest.map(table => (
+          {isolateFirstTable && tables.length > 0 ? (
+            <div className="flex gap-4" style={{ direction: 'ltr' }}>
+              {/* Table 1 alone — no empty space below */}
+              <div>
+                <CircleTable
+                  table={tables[0]}
+                  guests={guestsByTable[tables[0].id] ?? []}
+                  onClick={() => setActiveTable(tables[0])}
+                />
+              </div>
+              {/* Tables 2-30 in normal 5-row grid */}
+              <div style={{ display: 'grid', gridTemplateRows: `repeat(${ROWS}, auto)`, gridAutoFlow: 'column', gap: '1rem' }}>
+                {tables.slice(1).map(table => (
                   <CircleTable key={table.id} table={table} guests={guestsByTable[table.id] ?? []} onClick={() => setActiveTable(table)} />
-                )),
-              ]
-            })() : tables.map(table => (
-              <CircleTable
-                key={table.id}
-                table={table}
-                guests={guestsByTable[table.id] ?? []}
-                onClick={() => setActiveTable(table)}
-              />
-            ))}
-          </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateRows: `repeat(${ROWS}, auto)`,
+                gridAutoFlow: 'column',
+                gap: '1rem',
+                direction: mainOnRight ? 'rtl' : 'ltr',
+              }}
+            >
+              {tables.map(table => (
+                <CircleTable
+                  key={table.id}
+                  table={table}
+                  guests={guestsByTable[table.id] ?? []}
+                  onClick={() => setActiveTable(table)}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Main table on RIGHT for Men */}
           {mainOnRight && MainTableButton}
