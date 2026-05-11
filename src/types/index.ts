@@ -12,6 +12,7 @@ export interface Guest {
   id: string
   full_name: string
   category: string
+  side: TableType
   table_id: string | null
   created_at: string
 }

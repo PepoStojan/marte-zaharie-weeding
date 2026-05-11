@@ -34,7 +34,7 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
     const [{ data: t }, { data: main }, { data: g }, { data: all }] = await Promise.all([
       supabase.from('tables').select('*').eq('table_type', sideType).order('table_number', { ascending: true }),
       supabase.from('tables').select('*').eq('table_type', 'Main').single(),
-      supabase.from('guests').select('*').order('full_name'),
+      supabase.from('guests').select('*').eq('side', sideType).order('full_name'),
       supabase.from('tables').select('*').order('table_type').order('table_number', { ascending: true }),
     ])
     if (t) setTables(t)
@@ -285,6 +285,7 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
             <GuestList
               guests={guests}
               tables={allTables}
+              sideType={sideType}
               dropdownTypes={sideType === 'Main' ? ['Main'] : [sideType, 'Main']}
               selectedGuest={selectedGuest}
               onSelectGuest={handleSelectGuest}

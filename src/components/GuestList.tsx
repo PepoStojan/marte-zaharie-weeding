@@ -1,19 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import type { Guest, Table } from '@/types'
+import type { Guest, Table, TableType } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 
 interface Props {
   guests: Guest[]
   tables: Table[]
+  sideType: TableType
   dropdownTypes?: Array<'Women' | 'Men' | 'Main'>
   selectedGuest: Guest | null
   onSelectGuest: (guest: Guest | null) => void
   onRefresh: () => void
 }
 
-export default function GuestList({ guests, tables, dropdownTypes, selectedGuest, onSelectGuest, onRefresh }: Props) {
+export default function GuestList({ guests, tables, sideType, dropdownTypes, selectedGuest, onSelectGuest, onRefresh }: Props) {
   const [newName, setNewName] = useState('')
   const [newTableId, setNewTableId] = useState('')
   const [filter, setFilter] = useState<'all' | 'seated' | 'unseated'>('all')
@@ -59,6 +60,7 @@ export default function GuestList({ guests, tables, dropdownTypes, selectedGuest
     await supabase.from('guests').insert({
       full_name: newName.trim(),
       category: '',
+      side: sideType,
       ...(newTableId ? { table_id: newTableId } : {}),
     })
     setNewName('')
