@@ -16,17 +16,20 @@ interface Props {
 
 export default function SidePage({ sideType, title, emoji, accentClass }: Props) {
   const [tables, setTables] = useState<Table[]>([])
+  const [mainTable, setMainTable] = useState<Table | null>(null)
   const [guests, setGuests] = useState<Guest[]>([])
   const [activeTable, setActiveTable] = useState<Table | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
   const fetchData = useCallback(async () => {
-    const [{ data: t }, { data: g }] = await Promise.all([
+    const [{ data: t }, { data: main }, { data: g }] = await Promise.all([
       supabase.from('tables').select('*').eq('table_type', sideType).order('table_number'),
+      supabase.from('tables').select('*').eq('table_type', 'Main').single(),
       supabase.from('guests').select('*').order('full_name'),
     ])
     if (t) setTables(t)
+    if (main) setMainTable(main)
     if (g) setGuests(g)
   }, [supabase, sideType])
 
@@ -51,7 +54,10 @@ export default function SidePage({ sideType, title, emoji, accentClass }: Props)
 
   const unseated = guests.filter(g => !g.table_id)
   const totalSeated = tables.reduce((sum, t) => sum + (guestsByTable[t.id]?.length ?? 0), 0)
-  const totalCap = tables.reduce((sum, t) => sum + t.capacity_limit, 0)
+  const mainGuests = mainTable ? (guestsByTable[mainTable.id] ?? []) : []
+
+  // 6 rows per column — fills top-to-bottom then next column
+  const ROWS = 6
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -59,7 +65,7 @@ export default function SidePage({ sideType, title, emoji, accentClass }: Props)
       <nav className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
         <button
           onClick={() => router.push('/dashboard')}
-          className="text-gray-500 hover:text-gray-800 text-lg leading-none"
+          className="text-gray-500 hover:text-gray-800 text-lg leading-none px-1"
         >
           ←
         </button>
@@ -72,17 +78,36 @@ export default function SidePage({ sideType, title, emoji, accentClass }: Props)
         </div>
       </nav>
 
-      {/* Capacity bar */}
-      <div className="h-1.5 bg-gray-200">
-        <div
-          className="h-full bg-green-500 transition-all"
-          style={{ width: totalCap ? `${(totalSeated / totalCap) * 100}%` : '0%' }}
-        />
-      </div>
+      {/* Body */}
+      <main className="flex-1 flex gap-8 p-8 overflow-auto">
 
-      {/* Circle grid */}
-      <main className="flex-1 p-6">
-        <div className="flex flex-wrap gap-5 justify-center">
+        {/* Main Table — always visible on the left */}
+        {mainTable && (
+          <div className="shrink-0 flex flex-col items-center gap-3">
+            <button
+              onClick={() => setActiveTable(mainTable)}
+              className="w-48 h-24 rounded-xl border-2 border-amber-400 bg-amber-50 hover:bg-amber-100 hover:shadow-md transition-all flex flex-col items-center justify-center gap-1"
+            >
+              <span className="text-xs font-semibold text-amber-600 tracking-widest uppercase">Main Table</span>
+              {mainGuests.length > 0 && (
+                <span className="text-xs text-amber-500">
+                  {mainGuests.length}/{mainTable.capacity_limit}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Circle grid — column-flow */}
+        <div
+          className="flex gap-5"
+          style={{
+            display: 'grid',
+            gridTemplateRows: `repeat(${ROWS}, auto)`,
+            gridAutoFlow: 'column',
+            gap: '1.25rem',
+          }}
+        >
           {tables.map(table => (
             <CircleTable
               key={table.id}
