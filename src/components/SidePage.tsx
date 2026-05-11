@@ -123,8 +123,6 @@ export default function SidePage({ sideType, title, emoji, accentClass, mainOnRi
                 <CircleTable key={first.id} table={first} guests={guestsByTable[first.id] ?? []} onClick={() => setActiveTable(first)} />,
                 // Empty rows 2-5 of column 1
                 ...Array.from({ length: ROWS - 1 }, (_, i) => <div key={`col1-${i}`} style={{ width: 140, height: 140 }} />),
-                // Full blank aisle column
-                ...Array.from({ length: ROWS }, (_, i) => <div key={`aisle-${i}`} style={{ width: 140, height: 140 }} />),
                 // Remaining tables fill columns normally
                 ...rest.map(table => (
                   <CircleTable key={table.id} table={table} guests={guestsByTable[table.id] ?? []} onClick={() => setActiveTable(table)} />
